@@ -98,6 +98,7 @@
     <ClCompile Include="DirectXTexD3D12.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\Texconv\texconv_uwp.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="DirectXTex.h">
