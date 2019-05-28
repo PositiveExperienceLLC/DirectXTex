@@ -629,6 +629,7 @@ namespace DirectX
         CNMAP_CHANNEL_BLUE      = 0x3,
         CNMAP_CHANNEL_ALPHA     = 0x4,
         CNMAP_CHANNEL_LUMINANCE = 0x5,
+        CNMAP_CHANNEL_REDGREEN = 0x6,
             // Channel selection when evaluting color value for height
             // Luminance is a combination of red, green, and blue
 

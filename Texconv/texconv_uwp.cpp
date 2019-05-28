@@ -1205,6 +1205,10 @@ int dxtConvMain(_In_ int argc, _In_z_count_(argc) wchar_t* argv[])
                 {
                     dwNormalMap |= CNMAP_CHANNEL_ALPHA;
                 }
+                else if (wcschr(pValue, L'y'))
+                {
+                    dwNormalMap |= CNMAP_CHANNEL_REDGREEN;
+                }
                 else
                 {
                     wprintf(L"Invalid value specified for -nmap (%ls), missing l, r, g, b, or a\n\n", pValue);

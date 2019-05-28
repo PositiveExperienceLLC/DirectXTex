@@ -39,6 +39,14 @@ namespace
             return f.x + f.y + f.z;
         }
 
+        case CNMAP_CHANNEL_REDGREEN:
+        {
+            float red = XMVectorGetX(val);
+            float green = XMVectorGetY(val);
+
+            return ((red * 255.0f) + green) / 256.0f;
+        }
+
         default:
             assert(false);
             return 0.f;
@@ -178,7 +186,7 @@ namespace
                 float deltaZY = totDelta * amplitude / 6.f;
 
                 XMVECTOR vx = XMVectorSetZ(g_XMNegIdentityR0, deltaZX);   // (-1.0f, 0.0f, deltaZX)
-                XMVECTOR vy = XMVectorSetZ(g_XMNegIdentityR1, deltaZY);   // (0.0f, -1.0f, deltaZY)
+                XMVECTOR vy = XMVectorSetZ(g_XMNegIdentityR1, deltaZY);   // (0.0f, -1.0f, deltaZY) // AJF: Think you have to switch sign for Unity nmaps.
 
                 XMVECTOR normal = XMVector3Normalize(XMVector3Cross(vx, vy));
 
@@ -205,7 +213,7 @@ namespace
                     if (delta > 0.f)
                     {
                         // If < 0, then no occlusion
-                        float r = sqrtf(1.f + delta*delta);
+                        float r = sqrtf(1.f + delta * delta);
                         alpha = (r - delta) / r;
                     }
                 }
@@ -215,15 +223,35 @@ namespace
                 {
                     // 0.5f*normal + 0.5f -or- invert sign case: -0.5f*normal + 0.5f
                     XMVECTOR n1 = XMVectorMultiplyAdd((flags & CNMAP_INVERT_SIGN) ? g_XMNegativeOneHalf : g_XMOneHalf, normal, g_XMOneHalf);
+                    if (flags & CNMAP_COMPUTE_OCCLUSION)
+                    {
+                        n1 = XMVectorSetX(n1, alpha);
+                        n1 = XMVectorSetY(n1, alpha);
+                        n1 = XMVectorSetZ(n1, alpha);
+                    }
                     *dptr++ = XMVectorSetW(n1, alpha);
                 }
                 else if (flags & CNMAP_INVERT_SIGN)
                 {
-                    *dptr++ = XMVectorSetW(XMVectorNegate(normal), alpha);
+                    XMVECTOR n1 = XMVectorSetW(XMVectorNegate(normal), alpha);
+
+                    if (flags & CNMAP_COMPUTE_OCCLUSION)
+                    {
+                        n1 = XMVectorSplatW(n1);
+                    }
+
+                    *dptr++ = n1;
                 }
                 else
                 {
-                    *dptr++ = XMVectorSetW(normal, alpha);
+                    XMVECTOR n1 = XMVectorSetW(normal, alpha);
+
+                    if (flags & CNMAP_COMPUTE_OCCLUSION)
+                    {
+                        n1 = XMVectorSplatW(n1);
+                    }
+
+                    *dptr++ = n1;
                 }
             }
 
@@ -248,7 +276,7 @@ namespace
 //=====================================================================================
 // Entry points
 //=====================================================================================
-        
+
 //-------------------------------------------------------------------------------------
 // Generates a normal map from a height-map
 //-------------------------------------------------------------------------------------
@@ -336,6 +364,7 @@ HRESULT DirectX::ComputeNormalMap(
     case CNMAP_CHANNEL_BLUE:
     case CNMAP_CHANNEL_ALPHA:
     case CNMAP_CHANNEL_LUMINANCE:
+    case CNMAP_CHANNEL_REDGREEN:
         break;
 
     default:
